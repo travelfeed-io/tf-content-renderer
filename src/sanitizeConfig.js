@@ -108,6 +108,7 @@ const sanitizeHtmlConfig = ({
   secureLinks = false,
   allLinksBlank = false,
   removeImageDimensions = false,
+  addLinkAttys = true,
 }) => ({
   allowedTags,
   // figure, figcaption,
@@ -219,11 +220,12 @@ const sanitizeHtmlConfig = ({
         href = `/exit?url=${encodeURIComponent(href)}`;
         attys.rel = 'nofollow';
       } else if (
-        allLinksBlank ||
-        (secureLinks &&
-          ownDomains.indexOf(hostname) === -1 &&
-          ['https', 'http'].indexOf(url.protocol)) ||
-        !hostname.match(ownUrl)
+        addLinkAttys &&
+        (allLinksBlank ||
+          (secureLinks &&
+            ownDomains.indexOf(hostname) === -1 &&
+            ['https', 'http'].indexOf(url.protocol)) ||
+          !hostname.match(ownUrl))
       ) {
         attys.target = '_blank';
         attys.rel = 'ugc noopener noreferrer';
