@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-restricted-syntax */
 /**
 This function is extracted from the source code of busy.org and condenser with 
@@ -84,6 +85,9 @@ const iframeWhitelist = [
   },
   {
     re: /^(https?:)?\/\/open\.spotify\.com\/embed\/track\/[a-zA-Z0-9]*/i,
+  },
+  {
+    re: /^(https?:)?\/\/mapa-turystyczna\.pl\/map\/widget\/route\/[a-zA-Z0-9\/]*.html/i,
   },
   {
     re: /^(https?:)?\/\/(?:www\.)?(?:(player.)?twitch.tv\/)(.*)?$/i,
