@@ -25,25 +25,26 @@ const ownDomains = [
 
 const knownDomains = [
   'localhost',
-  'busy.org',
   'steempeak.com',
   'steemit.com',
-  'partiko.app',
+  'hive.blog',
+  'peakd.com',
+  'ecency.com',
   'd.tube',
   'youtube.com',
   'instagram.com',
   'facebook.com',
   'discord.gg',
-  'steemitworldmap.com',
-  'www.busy.org',
   'www.steempeak.com',
   'www.steemit.com',
+  'www.hive.blog',
+  'www.peakd.com',
+  'www.ecency.com',
   'www.d.tube',
   'www.youtube.com',
   'www.instagram.com',
   'www.facebook.com',
   'www.discord.gg',
-  'www.steemitworldmap.com',
 ];
 
 const iframeWhitelist = [
