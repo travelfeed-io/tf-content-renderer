@@ -59,6 +59,9 @@ const iframeWhitelist = [
     },
   },
   {
+    re: /^(https?:)?\/\/embed\.truvvl\.com\/@.*/i,
+  },
+  {
     re: /^(https?:)?\/\/(?:www.)?instagram\.com\/p\/.*/i,
   },
   {
