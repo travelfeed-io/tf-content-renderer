@@ -13,13 +13,13 @@
     "sanitize-html": "^2.3.3",
     "steem-content-renderer": "^2.1.1",
     "tf-post-parser": "git+https://github.com/travelfeed-io/tf-post-parser.git",
-    "url-parse": "^1.5.1"
+    "url-parse": "^1.5.10"
   },
   "devDependencies": {
     "eslint": "^6.5.1",
     "eslint-config-prettier": "^6.3.0",
     "eslint-plugin-prettier": "^3.1.1",
-    "nodemon": "^2.0.2",
+    "nodemon": "^2.0.19",
     "prettier": "^1.18.2"
   }
 }
