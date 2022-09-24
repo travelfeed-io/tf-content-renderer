@@ -108,6 +108,20 @@ const allowedTags = `
   .trim()
   .split(/,\s*/);
 
+const processHeading = (tagName, attribs) => {
+  const attys = {};
+  if (attribs.json) attys.json = attribs.json;
+  const classWhitelist = ['text-right'];
+  const validClass = classWhitelist.find(e => attribs.class === e);
+  if (validClass) {
+    attys.class = validClass;
+  }
+  return {
+    tagName,
+    attribs: attys,
+  };
+};
+
 // Medium insert plugin uses: div, figure, figcaption, iframe
 const sanitizeHtmlConfig = ({
   large = true,
@@ -136,6 +150,12 @@ const sanitizeHtmlConfig = ({
 
     // class attribute is strictly whitelisted (below)
     div: ['class', 'json'],
+    h1: ['class'],
+    h2: ['class'],
+    h3: ['class'],
+    h4: ['class'],
+    h5: ['class'],
+    h6: ['class'],
 
     // style is subject to attack, filtering more below
     td: ['style'],
@@ -211,6 +231,17 @@ const sanitizeHtmlConfig = ({
         attribs: attys,
       };
     },
+    td: (tagName, attribs) => {
+      const attys = {};
+      if (attribs.style === 'text-align:right') {
+        attys.style = 'text-align:right';
+      }
+      const retTag = {
+        tagName,
+        attribs: attys,
+      };
+      return retTag;
+    },
     a: (tagName, attribs) => {
       let { href } = attribs;
       if (!href) href = '#';
@@ -244,6 +275,24 @@ const sanitizeHtmlConfig = ({
         tagName,
         attribs: attys,
       };
+    },
+    h1: (tagName, attribs) => {
+      return processHeading(tagName, attribs);
+    },
+    h2: (tagName, attribs) => {
+      return processHeading(tagName, attribs);
+    },
+    h3: (tagName, attribs) => {
+      return processHeading(tagName, attribs);
+    },
+    h4: (tagName, attribs) => {
+      return processHeading(tagName, attribs);
+    },
+    h5: (tagName, attribs) => {
+      return processHeading(tagName, attribs);
+    },
+    h6: (tagName, attribs) => {
+      return processHeading(tagName, attribs);
     },
   },
 });
