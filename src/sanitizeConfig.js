@@ -35,6 +35,12 @@ const knownDomains = [
   'instagram.com',
   'facebook.com',
   'discord.gg',
+  'viator.com',
+  'booking.com',
+  'agoda.com',
+  'viator.tp.st', // Travelpayouts
+  'booking.tp.st',
+  'hostelworld.tp.st',
   'www.steempeak.com',
   'www.steemit.com',
   'www.hive.blog',
@@ -45,6 +51,9 @@ const knownDomains = [
   'www.instagram.com',
   'www.facebook.com',
   'www.discord.gg',
+  'www.viator.com',
+  'www.booking.com',
+  'www.agoda.com',
 ];
 
 const iframeWhitelist = [
@@ -297,4 +306,4 @@ const sanitizeHtmlConfig = ({
   },
 });
 
-module.exports = { sanitizeHtmlConfig };
+module.exports = { sanitizeHtmlConfig, knownDomains };
