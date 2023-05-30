@@ -131,6 +131,25 @@ const processHeading = (tagName, attribs) => {
   };
 };
 
+const processJson = json => {
+  const parsed = JSON.parse(json);
+  if (parsed && parsed.type === 'button' && parsed.data && parsed.data.link) {
+    let href = parsed.data.link;
+    if (!href) href = '#';
+    href = href.trim();
+    const url = new URL(href);
+    const hostname = url.hostname || 'localhost';
+    if (
+      knownDomains.indexOf(hostname) === -1 &&
+      ownDomains.indexOf(hostname) === -1
+    ) {
+      return json;
+    }
+    parsed.data.isWhitelist = true;
+    return JSON.stringify(parsed);
+  }
+};
+
 // Medium insert plugin uses: div, figure, figcaption, iframe
 const sanitizeHtmlConfig = ({
   large = true,
@@ -221,7 +240,7 @@ const sanitizeHtmlConfig = ({
     },
     div: (tagName, attribs) => {
       const attys = {};
-      if (attribs.json) attys.json = attribs.json;
+      if (attribs.json) attys.json = processJson(attribs.json);
       const classWhitelist = [
         'pull-right',
         'pull-left',
