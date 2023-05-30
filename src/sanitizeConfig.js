@@ -148,6 +148,7 @@ const processJson = json => {
     parsed.data.isWhitelist = true;
     return JSON.stringify(parsed);
   }
+  return json;
 };
 
 // Medium insert plugin uses: div, figure, figcaption, iframe
