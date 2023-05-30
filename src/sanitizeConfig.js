@@ -326,4 +326,4 @@ const sanitizeHtmlConfig = ({
   },
 });
 
-module.exports = { sanitizeHtmlConfig, knownDomains };
+module.exports = { sanitizeHtmlConfig };
