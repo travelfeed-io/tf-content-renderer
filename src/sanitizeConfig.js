@@ -132,23 +132,28 @@ const processHeading = (tagName, attribs) => {
 };
 
 const processJson = json => {
-  const parsed = JSON.parse(json);
-  if (parsed && parsed.type === 'button' && parsed.data && parsed.data.link) {
-    let href = parsed.data.link;
-    if (!href) href = '#';
-    href = href.trim();
-    const url = new URL(href);
-    const hostname = url.hostname || 'localhost';
-    if (
-      knownDomains.indexOf(hostname) === -1 &&
-      ownDomains.indexOf(hostname) === -1
-    ) {
-      return json;
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && parsed.type === 'button' && parsed.data && parsed.data.link) {
+      let href = parsed.data.link;
+      if (!href) href = '#';
+      href = href.trim();
+      const url = new URL(href);
+      const hostname = url.hostname || 'localhost';
+      if (
+        knownDomains.indexOf(hostname) === -1 &&
+        ownDomains.indexOf(hostname) === -1
+      ) {
+        return json;
+      }
+      parsed.data.isWhitelist = true;
+      return JSON.stringify(parsed);
     }
-    parsed.data.isWhitelist = true;
-    return JSON.stringify(parsed);
+    return json;
+  } catch (err) {
+    console.error(err);
+    return json;
   }
-  return json;
 };
 
 // Medium insert plugin uses: div, figure, figcaption, iframe
