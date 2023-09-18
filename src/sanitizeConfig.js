@@ -43,6 +43,7 @@ const knownDomains = [
   'discovercars.tp.st',
   'hostelworld.tp.st',
   'omio.tp.st',
+  'safetywing.com',
   'tiqets.tp.st',
   'agoda.tp.st',
   '12go.tp.st',
