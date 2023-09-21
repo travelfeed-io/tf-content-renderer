@@ -44,6 +44,8 @@ const knownDomains = [
   'hostelworld.tp.st',
   'omio.tp.st',
   'safetywing.com',
+  'maps.app.goo.gl',
+  'www.travelpayouts.com',
   'tiqets.tp.st',
   'agoda.tp.st',
   '12go.tp.st',
