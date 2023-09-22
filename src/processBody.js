@@ -3,9 +3,12 @@ const sanitize = require('sanitize-html');
 const { parseBody } = require('./parseBody');
 const { isSpam } = require('./helpers/isSpam');
 
-const processBody = body => {
+const processBody = (body, options) => {
   const htmlBody = parseBody(body, {});
-  const bodyToSanitize = parseBody(body, { removeJson: true });
+  const bodyToSanitize = parseBody(body, {
+    removeJson: true,
+    secureLinks: !options || options.secureLinks !== false,
+  });
   const sanitized = sanitize(bodyToSanitize, { allowedTags: [] });
   const readtime = readingTime(sanitized);
   const { minutes, words } = readtime;
