@@ -17,6 +17,8 @@ const { ownUrl } = require('./helpers/regex');
 
 const ownDomains = [
   'localhost',
+  'travelfeed.com',
+  'www.travelfeed.com',
   'travelfeed.io',
   'www.travelfeed.io',
   'staging.travelfeed.io',

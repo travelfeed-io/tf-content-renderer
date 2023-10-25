@@ -14,7 +14,7 @@ const {
 const { sanitizeHtmlConfig } = require('./sanitizeConfig');
 
 const renderer = new DefaultRenderer({
-  baseUrl: 'https://travelfeed.io/',
+  baseUrl: 'https://travelfeed.com/',
   breaks: true,
   skipSanitization: true, // performed by sanitize
   addNofollowToLinks: false, // performed by sanitize
