@@ -101,6 +101,9 @@ const parseBody = (body, options) => {
     sanitizeHtmlConfig({
       secureLinks: options.secureLinks !== false,
       allLinksBlank: options.allLinksBlank === true,
+      // Off unless a caller explicitly opts in, so community rendering is
+      // untouched.
+      preserveLinkRel: options.preserveLinkRel === true,
       removeImageDimensions: options.removeImageDimensions === true,
     }),
   );

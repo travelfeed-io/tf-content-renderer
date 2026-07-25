@@ -150,6 +150,16 @@ const processHeading = (tagName, attribs) => {
   };
 };
 
+// The rel values an author may set on their own blog. "dofollow" is not a real
+// rel value — the absence of nofollow is what makes a link followed — so it is
+// deliberately not here.
+const AUTHOR_REL = ['nofollow', 'sponsored', 'ugc'];
+
+const dedupeRel = values =>
+  values
+    .filter((value, index) => value && values.indexOf(value) === index)
+    .join(' ');
+
 const processJson = json => {
   try {
     const parsed = JSON.parse(json);
@@ -184,6 +194,13 @@ const sanitizeHtmlConfig = ({
   allLinksBlank = false,
   removeImageDimensions = false,
   addLinkAttys = true,
+  // TravelFeed Hosting. On a hosted blog the AUTHOR owns their link graph: an
+  // editorial link should pass ranking signal, an affiliate link must be
+  // rel="sponsored" (Google requires it), and neither is user-generated
+  // content. The default (false) keeps the community policy exactly as it is —
+  // every off-domain link nofollowed or marked ugc, because on travelfeed.com
+  // the link graph is ours to protect, not the poster's to spend.
+  preserveLinkRel = false,
 }) => ({
   allowedTags,
   // figure, figcaption,
@@ -304,13 +321,34 @@ const sanitizeHtmlConfig = ({
       const url = new URL(href);
       const hostname = url.hostname || 'localhost';
 
+      // Only these three are the author's to declare. Anything else in their
+      // rel (including a hand-written "dofollow", which is not a real value)
+      // is dropped rather than passed through into the page.
+      const declaredRel = preserveLinkRel
+        ? String(attribs.rel || '')
+            .split(/\s+/)
+            .filter(value => AUTHOR_REL.indexOf(value) !== -1)
+        : [];
+
       if (
         secureLinks &&
         knownDomains.indexOf(hostname) === -1 &&
         ownDomains.indexOf(hostname) === -1
       ) {
+        // The exit interstitial is about reader safety and spam, not ranking,
+        // so it still applies even when the author owns the link graph.
         href = `/exit?url=${encodeURIComponent(href)}`;
-        attys.rel = 'nofollow';
+        attys.rel = dedupeRel(['nofollow'].concat(declaredRel));
+      } else if (preserveLinkRel) {
+        // Author-controlled: an unmarked link stays a plain editorial link.
+        // noopener/noreferrer only ride along with a new tab, where leaving
+        // them off hands the destination a handle back into the page.
+        const wantsNewTab = attribs.target === '_blank';
+        if (wantsNewTab) attys.target = '_blank';
+        const rel = dedupeRel(
+          declaredRel.concat(wantsNewTab ? ['noopener', 'noreferrer'] : []),
+        );
+        if (rel) attys.rel = rel;
       } else if (
         addLinkAttys &&
         (allLinksBlank ||
