@@ -236,6 +236,16 @@ const sanitizeHtmlConfig = ({
     'byteball',
     'bitcoin',
   ]),
+  // NEVER return `text:` from a transformTags handler.
+  //
+  // sanitize-html 2.3.3 sets a single `addedText` flag when a transform supplies
+  // replacement text (index.js:423) and never resets it — every text node in the
+  // REST OF THE DOCUMENT is then dropped (index.js:452-455). One post with one
+  // unsupported iframe therefore lost every paragraph below it on the published
+  // page: they render as empty <p></p>. Found by the Editor v2 corpus gate.
+  //
+  // Fixed upstream by resetting the flag per tag; until this package can take a
+  // sanitize-html bump, the rule is simply not to use the feature.
   transformTags: {
     iframe: (tagName, attribs) => {
       const srcAtty = decodeURIComponent(attribs.src);
@@ -259,10 +269,15 @@ const sanitizeHtmlConfig = ({
         }
       }
       sanitizeErrors.push(`Invalid iframe URL: ${srcAtty}`);
-      return { tagName: 'div', text: `(Unsupported ${srcAtty})` };
+      // NO `text:` here — see the note above transformTags. The URL is already
+      // recorded in sanitizeErrors for callers that want it; printing
+      // `(Unsupported …)` into the article cost every paragraph after it.
+      return { tagName: 'div' };
     },
     img: (tagName, attribs) => {
-      if (noImage) return { tagName: 'div', text: noImageText };
+      // Same reason as the iframe branch: a `text:` transform silences every
+      // text node in the rest of the document.
+      if (noImage) return { tagName: 'div' };
       // See https://github.com/punkave/sanitize-html/issues/117
       const { src, alt, width, height } = attribs;
       if (!/^(https?:)?\/\//i.test(src)) {
