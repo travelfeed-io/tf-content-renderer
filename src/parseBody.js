@@ -2,15 +2,12 @@ const sanitizeHtml = require('sanitize-html');
 const { DefaultRenderer } = require('steem-content-renderer');
 const { imageProxy } = require('tf-post-parser');
 const {
-  dtubeImageRegex,
   htmlComment,
   imgFullSize,
   instagramPost,
-  markdownComment,
   swmregex,
-  tfAdBottom,
-  tfAdTop,
 } = require('./helpers/regex');
+const { removeSnippet } = require('./helpers/removeSnippets');
 const { sanitizeHtmlConfig } = require('./sanitizeConfig');
 
 const renderer = new DefaultRenderer({
@@ -32,28 +29,22 @@ const renderer = new DefaultRenderer({
 const parseBody = (body, options) => {
   // Remove HTML comments
   let parsedBody = body.replace(htmlComment, '');
+  // The removals below do not use regexes: the greedy `.*` regexes they
+  // replace backtracked for seconds on one long line (see
+  // helpers/removeSnippets.js).
   // remove markdown comment
-  parsedBody = parsedBody.replace(markdownComment, '');
+  parsedBody = removeSnippet.markdownComment(parsedBody);
   // Remove partiko ads
-  parsedBody = parsedBody.replace(/Posted using \[Partiko .*]\(.*\)/g, '');
+  parsedBody = removeSnippet.partikoAd(parsedBody);
   // Remove travelfeed ads
-  parsedBody = parsedBody.replace(
-    /<hr \/><center>View this post <a href="https:\/\/travelfeed\.io\/@.*">on the TravelFeed dApp<\/a> for the best experience\.<\/center>/g,
-    '',
-  );
-  parsedBody = parsedBody.replace(tfAdBottom, '');
-  parsedBody = parsedBody.replace(tfAdTop, '');
+  parsedBody = removeSnippet.travelfeedDappAd(parsedBody);
+  parsedBody = removeSnippet.travelfeedBottomAd(parsedBody);
+  parsedBody = removeSnippet.travelfeedTopAd(parsedBody);
   // Remove dclick ads
-  parsedBody = parsedBody.replace(/\[!\[dclick-imagead]\(h.*\)]\(.*\)/g, '');
-  parsedBody = parsedBody.replace(
-    /#####.*<sub>.*\*\*Sponsored \( Powered by \[dclick]\(https:\/\/www\.dclick\.io\) \)\*\* <\/sub>/g,
-    '',
-  );
+  parsedBody = removeSnippet.dclickImageAd(parsedBody);
+  parsedBody = removeSnippet.dclickSponsoredAd(parsedBody);
   // Remove tripsteem ads
-  parsedBody = parsedBody.replace(
-    /<a href='https:\/\/.*tripsteem\.com\/post\/.*'>.*<\/a>/g,
-    '',
-  );
+  parsedBody = removeSnippet.tripsteemAd(parsedBody);
   parsedBody = parsedBody.replace(
     /This is posted on <a href='https:\/\/en\.tripsteem\.com\/'><b>trips\.teem/g,
     '',
@@ -63,10 +54,7 @@ const parseBody = (body, options) => {
     '',
   );
   // Remove SWM snippets with description
-  parsedBody = parsedBody.replace(
-    /!\b(?:steemitworldmap|pinmapple)\b\s((?:[-+]?(?:[1-8]?\d(?:\.\d+)?|90(?:\.0+)?)))\s\blat\b\s((?:[-+]?(?:180(?:\.0+)?|(?:(?:1[0-7]\d)|(?:[1-9]?\d))(?:\.\d+)?)))\s\blong.*d3scr/gi,
-    '',
-  );
+  parsedBody = removeSnippet.swmWithDescription(parsedBody);
   // Remove easy editor swm remains
   parsedBody = parsedBody.replace(/\\\[\/\/\\\]:# \(\)/gi, '');
   // Turn Instagram URLs into embeds
@@ -81,11 +69,11 @@ const parseBody = (body, options) => {
   );
   // If enabled: Remove tfjson
   if (options.removeJson) {
-    parsedBody = parsedBody.replace(/<div json='.*'>.*<\/div>/gi, '');
+    parsedBody = removeSnippet.json(parsedBody);
   }
 
   // Remove preview images in dtube posts with dtube embeds
-  parsedBody = parsedBody.replace(dtubeImageRegex, '');
+  parsedBody = removeSnippet.dtubePreviewImage(parsedBody);
   // remove remaining SWM snippets
   parsedBody = parsedBody.replace(swmregex, '');
   // Render markdown to HTML
