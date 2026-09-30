@@ -177,6 +177,24 @@ const isSafeTarget = value => {
   return !scheme || SAFE_SCHEMES.includes(scheme[1].toLowerCase());
 };
 
+// The host a link leads to. A network path (//host, and the \\host, /\\host
+// spellings browsers treat the same way) goes to another site, but url-parse
+// reports no host for it, which read as our own site and skipped the /exit
+// warning. Those are resolved the way browsers resolve them; every other link
+// keeps url-parse's reading ('' for a relative link).
+const linkHost = href => {
+  // eslint-disable-next-line no-control-regex
+  const url = href.replace(/[\t\n\r]/g, '').replace(/^[\u0000-\u0020]+/, '');
+  if (!/^[\\/]{2}/.test(url)) return new URL(url).hostname;
+  try {
+    // url-parse shadows URL in this module; this is the WHATWG parser.
+    // eslint-disable-next-line no-undef
+    return new globalThis.URL(url, 'https://travelfeed.com/').hostname;
+  } catch (err) {
+    return 'invalid.invalid';
+  }
+};
+
 // decodeURIComponent throws on a malformed sequence such as a lone '%'.
 const decodeOnce = value => {
   try {
@@ -196,8 +214,7 @@ const processJson = json => {
         parsed.data.isWhitelist = false;
         return JSON.stringify(parsed);
       }
-      const url = new URL(href);
-      const hostname = url.hostname || 'localhost';
+      const hostname = linkHost(href) || 'localhost';
       // Always recomputed: an isWhitelist the author wrote into the JSON
       // would skip the external-link warning for any domain.
       parsed.data.isWhitelist =
@@ -366,7 +383,7 @@ const sanitizeHtmlConfig = ({
       const attys = {};
 
       const url = new URL(href);
-      const hostname = url.hostname || 'localhost';
+      const hostname = linkHost(href) || 'localhost';
 
       // Only these three are the author's to declare. Anything else in their
       // rel (including a hand-written "dofollow", which is not a real value)

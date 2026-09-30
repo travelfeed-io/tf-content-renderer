@@ -92,3 +92,16 @@ test('relative button links survive, same-site in every form', () => {
     assert.equal(data.link, link, link);
   }
 });
+
+test('network paths count as external, however they are spelled', () => {
+  for (const link of [
+    '\\\\evil.example/phish',
+    '/\\evil.example/phish',
+    '//evil.example/phish',
+  ]) {
+    const data = buttonData(render(button({ text: 'Go', link })));
+    assert.equal(data.isWhitelist, false, link);
+    const html = render(`<a href="${link}">x</a>`);
+    assert.ok(html.includes('href="/exit?url='), `${link}: ${html}`);
+  }
+});
