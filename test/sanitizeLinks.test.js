@@ -50,6 +50,12 @@ test('a button link that is not a web link is replaced', () => {
     'javascript:alert(1)',
     'javascript://travelfeed.com/%0aalert(1)',
     ' data:text/html,x',
+    // Browsers drop tabs and newlines inside a URL and control characters
+    // in front of it.
+    'java\nscript:alert(1)',
+    'java\tscript:alert(1)',
+    '\u0001javascript:alert(1)',
+    'VBScript:msgbox(1)',
   ]) {
     const data = buttonData(render(button({ text: 'Go', link })));
     assert.equal(data.link, '#', link);
@@ -72,4 +78,17 @@ test('button whitelist status is recomputed, never taken from the author', () =>
   const relative = buttonData(render(button({ text: 'Go', link: '/@anna' })));
   assert.equal(relative.link, '/@anna');
   assert.equal(relative.isWhitelist, true);
+});
+
+test('relative button links survive, same-site in every form', () => {
+  for (const link of [
+    './next-post',
+    '../archive',
+    '?page=2',
+    '#map',
+    'next-post',
+  ]) {
+    const data = buttonData(render(button({ text: 'Go', link })));
+    assert.equal(data.link, link, link);
+  }
 });

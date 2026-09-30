@@ -160,14 +160,22 @@ const dedupeRel = values =>
     .filter((value, index) => value && values.indexOf(value) === index)
     .join(' ');
 
-// Link targets a reader's browser may follow: web and mail links, same-site
-// paths and in-page anchors. The sanitizer's own scheme check never sees two
-// kinds of target: a button link sits inside JSON, and an /exit?url= target
-// is only decoded in the browser. Both are checked against this list.
-const SAFE_TARGET = /^(?:(?:https?:)?\/\/|\/(?!\/)|#|mailto:|tel:)/i;
+// Link targets a reader's browser may follow: web and mail links, and any
+// relative reference (same-site paths, ./ and ../, ?query, #anchor). The
+// sanitizer's own scheme check never sees two kinds of target: a button link
+// sits inside JSON, and an /exit?url= target is only decoded in the browser.
+// Browsers drop tabs and newlines anywhere in a URL and control characters
+// and spaces in front of it (java\nscript: is javascript:), so the scheme
+// is read the same way.
+const SAFE_SCHEMES = ['http', 'https', 'mailto', 'tel'];
 
-const isSafeTarget = value =>
-  typeof value === 'string' && SAFE_TARGET.test(value.trim());
+const isSafeTarget = value => {
+  if (typeof value !== 'string') return false;
+  // eslint-disable-next-line no-control-regex
+  const url = value.replace(/[\t\n\r]/g, '').replace(/^[\u0000-\u0020]+/, '');
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(url);
+  return !scheme || SAFE_SCHEMES.includes(scheme[1].toLowerCase());
+};
 
 // decodeURIComponent throws on a malformed sequence such as a lone '%'.
 const decodeOnce = value => {
