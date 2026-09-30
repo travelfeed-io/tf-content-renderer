@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node --test test/removeSnippets.test.js"
+    "test": "node --test test/removeSnippets.test.js test/sanitizeLinks.test.js"
   },
   "author": "Julian Peters",
   "dependencies": {

@@ -160,22 +160,41 @@ const dedupeRel = values =>
     .filter((value, index) => value && values.indexOf(value) === index)
     .join(' ');
 
+// Link targets a reader's browser may follow: web and mail links, same-site
+// paths and in-page anchors. The sanitizer's own scheme check never sees two
+// kinds of target: a button link sits inside JSON, and an /exit?url= target
+// is only decoded in the browser. Both are checked against this list.
+const SAFE_TARGET = /^(?:(?:https?:)?\/\/|\/(?!\/)|#|mailto:|tel:)/i;
+
+const isSafeTarget = value =>
+  typeof value === 'string' && SAFE_TARGET.test(value.trim());
+
+// decodeURIComponent throws on a malformed sequence such as a lone '%'.
+const decodeOnce = value => {
+  try {
+    return decodeURIComponent(value);
+  } catch (err) {
+    return null;
+  }
+};
+
 const processJson = json => {
   try {
     const parsed = JSON.parse(json);
     if (parsed && parsed.type === 'button' && parsed.data && parsed.data.link) {
-      let href = parsed.data.link;
-      if (!href) href = '#';
-      href = href.trim();
+      const href = String(parsed.data.link).trim();
+      if (!isSafeTarget(href)) {
+        parsed.data.link = '#';
+        parsed.data.isWhitelist = false;
+        return JSON.stringify(parsed);
+      }
       const url = new URL(href);
       const hostname = url.hostname || 'localhost';
-      if (
-        knownDomains.indexOf(hostname) === -1 &&
-        ownDomains.indexOf(hostname) === -1
-      ) {
-        return json;
-      }
-      parsed.data.isWhitelist = true;
+      // Always recomputed: an isWhitelist the author wrote into the JSON
+      // would skip the external-link warning for any domain.
+      parsed.data.isWhitelist =
+        knownDomains.indexOf(hostname) !== -1 ||
+        ownDomains.indexOf(hostname) !== -1;
       return JSON.stringify(parsed);
     }
     return json;
@@ -331,6 +350,11 @@ const sanitizeHtmlConfig = ({
       let { href } = attribs;
       if (!href) href = '#';
       href = href.trim();
+      // An authored /exit?url= link keeps its text but loses the link when
+      // the target the browser decodes is not a web link.
+      const exitTarget = /^\/exit\?url=(.*)$/i.exec(href);
+      if (exitTarget && !isSafeTarget(decodeOnce(exitTarget[1])))
+        return { tagName: 'span', attribs: {} };
       const attys = {};
 
       const url = new URL(href);
