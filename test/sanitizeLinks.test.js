@@ -105,3 +105,19 @@ test('network paths count as external, however they are spelled', () => {
     assert.ok(html.includes('href="/exit?url='), `${link}: ${html}`);
   }
 });
+
+test('an iframe with a src that can not be decoded is not an embed, and nothing throws', () => {
+  for (const body of [
+    'Nice trip!\n\n<iframe src="%"></iframe>',
+    '<iframe src="%E0%A4%A"></iframe>',
+    '<iframe></iframe>',
+  ]) {
+    const { body: html } = processBody(body);
+    assert.ok(!/<iframe/.test(html), html);
+  }
+  // A real embed still renders.
+  const { body: html } = processBody(
+    '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>',
+  );
+  assert.match(html, /<iframe[^>]+youtube\.com\/embed\/dQw4w9WgXcQ/);
+});

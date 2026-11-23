@@ -292,7 +292,11 @@ const sanitizeHtmlConfig = ({
   // sanitize-html bump, the rule is simply not to use the feature.
   transformTags: {
     iframe: (tagName, attribs) => {
-      const srcAtty = decodeURIComponent(attribs.src);
+      // A src that can not be decoded (a lone '%') or is missing matches no
+      // embed. decodeURIComponent threw here, and one such tag in a post or in
+      // a Hive reply ended the whole render: in the comment sync it ended the
+      // process.
+      const srcAtty = decodeOnce(attribs.src) || '';
       for (const item of iframeWhitelist) {
         if (item.re.test(srcAtty)) {
           const src =
